@@ -1,0 +1,81 @@
+{
+  "assertions": 7772,
+  "checks": {
+    "adaptive_and_memory_safety": {
+      "cases": 34,
+      "estimated_no_path_mib": 6494.171478271484,
+      "estimated_with_path_mib": 9634.617889404297,
+      "guarded_modes": 2,
+      "large_grid_shape": [8201, 12548],
+      "plateau_converged": false,
+      "plateau_history": [
+        [64, 3.5608120205078126],
+        [128, 3.5608120205078126],
+        [256, 3.5601215288696286]
+      ],
+      "randomized_audit_cases": 30,
+      "randomized_audit_seed": 20260820,
+      "randomized_converged_count": 19,
+      "randomized_max_relative_gap_to_grid_1024": 1.1259626490304407e-05,
+      "randomized_stopped_before_grid_1024": 14,
+      "randomized_tolerance_violations": 0,
+      "stability_window": 3
+    },
+    "decimal_single_segment_oracle": {
+      "cases": 1000,
+      "max_absolute_error": 3.410605131648481e-13,
+      "max_relative_error": 2.1289669985321352e-14
+    },
+    "independent_grid_upper_bound": {
+      "cases": 120,
+      "max_absolute_bound_violation": 2.842170943040401e-14,
+      "max_relative_improvement_over_straight_grid": 0.2168109355093201
+    },
+    "metamorphic_properties": {
+      "cases": 500,
+      "joint_reversal_relative_error": 1.039246425936939e-15,
+      "normalized_scaling_relative_error": 8.529616129521552e-16,
+      "raw_scaling_relative_error": 1.0655529483218094e-15,
+      "refinement_increase_relative": 3.611793798265323e-16,
+      "symmetry_relative_error": 6.344264687240635e-16,
+      "translation_relative_error": 1.8044679853859127e-12
+    },
+    "numerical_edge_cases": {
+      "cases": 6
+    },
+    "path_certificates": {
+      "cases": 300,
+      "max_cost_relative_error": 1.5001209183288692e-15,
+      "max_endpoint_absolute_error": 0.0
+    },
+    "point_polyline_oracle": {
+      "cases": 300,
+      "max_relative_error": 6.869470330804277e-16
+    },
+    "resampling_convergence_diagnostic": {
+      "cases": 120,
+      "cases_improved_or_equal": 119,
+      "coarse_max_relative_gap": 0.007851991231566406,
+      "coarse_median_relative_gap": 2.8065706493810414e-16,
+      "fine_max_relative_gap": 0.000534488858411486,
+      "fine_median_relative_gap": 2.565588736267816e-16
+    },
+    "stress_benchmark": {
+      "actual_grid_shape": [1170, 749],
+      "elapsed_seconds": 4.939289094999822,
+      "path_points": 469,
+      "requested_grid_size": 512,
+      "tracemalloc_peak_mib": 33.55712032318115,
+      "vertices_per_curve": 120
+    }
+  },
+  "elapsed_seconds": 43.9599046039998,
+  "environment": {
+    "numpy": "2.3.5",
+    "platform": "Linux-6.18.35-x86_64-with-glibc2.39",
+    "python": "3.12.13"
+  },
+  "scenario_count": 2381,
+  "seed": 20260819,
+  "status": "PASS"
+}

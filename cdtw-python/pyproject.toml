@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cdtw-boundary-sampling"
+version = "0.2.0"
+description = "A validated boundary-sampling approximation of 1-D Continuous Dynamic Time Warping"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+]
+keywords = [
+    "continuous-dynamic-time-warping",
+    "cdtw",
+    "time-series",
+    "computational-geometry",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build>=1.2",
+    "coverage[toml]>=7.6",
+]
+
+[project.urls]
+Paper = "https://doi.org/10.4230/LIPIcs.SoCG.2022.22"
+
+[tool.setuptools]
+py-modules = ["cdtw"]
+
+[tool.coverage.run]
+branch = true
+source = ["cdtw"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
