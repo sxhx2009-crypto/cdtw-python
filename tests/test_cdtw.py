@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 import numpy as np
 
@@ -73,14 +74,14 @@ class CDTWTests(unittest.TestCase):
             cdtw_distance(coarse, resampled, grid_size=7), 0.0, places=12
         )
 
-    def test_collinear_resampling_deviates_only_at_finite_resolution(self) -> None:
-        # Inserting collinear vertices leaves the polygonal curve unchanged but
-        # splits parameter-space cells, and a path may only cross a cell
-        # boundary at a sampled coordinate.  The extra constraint can only
-        # raise the cost, and the gap has to vanish under refinement.  The
-        # older "resampling invariance" test compared two spellings of one
-        # curve against itself, where the answer is zero either way, so it
-        # could not observe this at all.
+    def test_collinear_resampling_is_exactly_invariant(self) -> None:
+        # Inserting collinear vertices leaves the polygonal curve unchanged.
+        # It used to split parameter-space cells and raise the cost by up to
+        # 4e-3 relative, because a path may cross a cell boundary only at a
+        # sampled coordinate.  _as_curve now keeps just the turning points, so
+        # the two spellings reduce to the same vertex list and agree exactly.
+        # The older "resampling invariance" test compared one curve against
+        # itself, where the answer is zero either way, so it saw none of this.
         curve1 = [1.834, 0.717, 0.299, 0.282, -1.425]
         curve2 = [1.911, -1.869]
         midpoints = [
@@ -90,21 +91,173 @@ class CDTWTests(unittest.TestCase):
         ]
         refined = midpoints + [curve1[-1]]
 
-        # The largest grid needs more than the default guard allows: a two-cell
-        # pair puts every boundary sample into one cell transition matrix.
+        for grid_size in (16, 128, 512):
+            with self.subTest(grid_size=grid_size):
+                self.assertEqual(
+                    cdtw_distance(refined, curve2, grid_size=grid_size),
+                    cdtw_distance(curve1, curve2, grid_size=grid_size),
+                )
+        np.testing.assert_array_equal(
+            _as_curve(refined, "refined").vertices,
+            _as_curve(curve1, "curve1").vertices,
+        )
+        # A straight run collapses to its endpoints.
+        np.testing.assert_array_equal(
+            _as_curve([0.0, 1.0, 2.0, 3.0], "run").vertices, np.array([0.0, 3.0])
+        )
+
+    def test_multi_cell_closed_form(self) -> None:
+        # P=[0,1,0,1] against Q=[0,1] spans three parameter-space cells, so
+        # unlike the other closed-form tests it exercises the cell-to-cell
+        # dynamic program rather than a single in-cell formula.  The continuous
+        # optimum is 0.5 and the finite grid approaches it from above.
         previous = None
-        for grid_size, bound in ((128, 1e-2), (512, 1e-3), (2048, 1e-5)):
-            coarse = cdtw_distance(
-                curve1, curve2, grid_size=grid_size, memory_limit_mib=None
-            )
-            split = cdtw_distance(
-                refined, curve2, grid_size=grid_size, memory_limit_mib=None
-            )
-            self.assertGreater(split, coarse - 1e-12)
-            self.assertLess(abs(split - coarse) / coarse, bound)
+        for grid_size, bound in ((64, 1e-3), (256, 1e-4), (1024, 1e-5)):
+            value = cdtw_distance([0.0, 1.0, 0.0, 1.0], [0.0, 1.0], grid_size=grid_size)
+            self.assertGreater(value, 0.5 - 1e-12)
+            self.assertLess(value - 0.5, bound)
             if previous is not None:
-                self.assertLessEqual(coarse, previous + 1e-12)
-            previous = coarse
+                self.assertLessEqual(value, previous + 1e-12)
+            previous = value
+
+    def test_refinement_never_increases_the_cost(self) -> None:
+        # Every reported value is the cost of a feasible monotone path, and a
+        # finer grid is a superset of the coarse coordinates, so refining can
+        # only find an equal or cheaper path.
+        rng = np.random.default_rng(20260820)
+        for _ in range(6):
+            p = np.round(rng.uniform(-2.0, 2.0, 5), 3)
+            q = np.round(rng.uniform(-2.0, 2.0, 4), 3)
+            with self.subTest(p=list(p), q=list(q)):
+                previous = None
+                for grid_size in (8, 16, 32, 64, 128, 256):
+                    value = cdtw_distance(p, q, grid_size=grid_size)
+                    if previous is not None:
+                        self.assertLessEqual(value, previous + 1e-12)
+                    previous = value
+
+    def test_never_below_an_independent_upper_bound(self) -> None:
+        # A deliberately naive reference: a uniform parameter grid restricted
+        # to right/up/diagonal edges, integrated by the midpoint rule.  Every
+        # such path is monotone and feasible, so its cost bounds the continuous
+        # optimum from above, and this implementation must not exceed it.
+        def reference(p, q, steps):
+            first = _as_curve(p, "p")
+            second = _as_curve(q, "q")
+            xs = np.linspace(0.0, first.length, steps + 1)
+            ys = np.linspace(0.0, second.length, steps + 1)
+
+            def edge(x1, y1, x2, y2, sub=64):
+                length = (x2 - x1) + (y2 - y1)
+                t = (np.arange(sub) + 0.5) / sub
+                heights = first.evaluate(x1 + (x2 - x1) * t) - second.evaluate(
+                    y1 + (y2 - y1) * t
+                )
+                return length * float(np.mean(np.abs(heights)))
+
+            cost = np.full((xs.size, ys.size), np.inf)
+            cost[0, 0] = 0.0
+            for i in range(xs.size):
+                for j in range(ys.size):
+                    if i == 0 and j == 0:
+                        continue
+                    options = []
+                    if i:
+                        options.append(cost[i - 1, j] + edge(xs[i - 1], ys[j], xs[i], ys[j]))
+                    if j:
+                        options.append(cost[i, j - 1] + edge(xs[i], ys[j - 1], xs[i], ys[j]))
+                    if i and j:
+                        options.append(
+                            cost[i - 1, j - 1] + edge(xs[i - 1], ys[j - 1], xs[i], ys[j])
+                        )
+                    cost[i, j] = min(options)
+            return float(cost[-1, -1])
+
+        for p, q in (
+            ([0.0, 1.0, -0.5, 2.0], [0.2, -0.9, 1.4]),
+            ([1.5, -0.3, 0.8], [-1.0, 2.0]),
+        ):
+            with self.subTest(p=p, q=q):
+                bound = reference(p, q, 40)
+                self.assertLessEqual(
+                    cdtw_distance(p, q, grid_size=128), bound + 1e-9 * max(1.0, bound)
+                )
+
+    def test_values_beyond_the_squaring_limit_are_rejected(self) -> None:
+        # Costs square the height, so finiteness of the input is not enough.
+        with self.assertRaises(ValueError):
+            cdtw_distance([0.0, 1e200, 0.0], [0.0, 1e200])
+        with self.assertRaises(ValueError):
+            cdtw_distance([0.0, 1.0], [0.0, 1e300])
+        # Just inside the limit still computes without warnings.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertTrue(
+                np.isfinite(cdtw_distance([0.0, 1e150], [0.0, 2e150], grid_size=8))
+            )
+
+    def test_adaptive_path_matches_reported_distance(self) -> None:
+        p = [0.4, -1.1, 0.9, 0.2, -0.7]
+        q = [-0.3, 1.2, -0.9, 0.5]
+        result = cdtw_adaptive(
+            p, q, initial_grid_size=16, max_grid_size=128, return_path=True
+        )
+        self.assertIsNotNone(result.parameter_path)
+        self.assertTrue(np.all(np.diff(result.parameter_path, axis=0) >= -1e-12))
+        self.assertAlmostEqual(
+            _integrate_returned_path(p, q, result.parameter_path),
+            result.distance,
+            places=11,
+        )
+
+    def test_adaptive_plateau_does_not_report_zero_error(self) -> None:
+        # A run of identical values is a finite-grid plateau, not proof of
+        # convergence.  Once the value has moved at least once, the reported
+        # estimate must never fall back to zero just because the most recent
+        # steps happened to agree.
+        p = [0.301, 0.048, 0.629, 1.787, 1.661]
+        q = [0.881, -1.509, 1.637, 0.853, -0.587, -1.115]
+        result = cdtw_adaptive(
+            p, q, initial_grid_size=16, max_grid_size=512, rtol=1e-12, atol=0.0
+        )
+        moved = [
+            abs(b - a)
+            for (_, a), (_, b) in zip(result.history[:-1], result.history[1:])
+        ]
+        if result.converged and any(value > 0.0 for value in moved):
+            self.assertGreater(result.estimated_error, 0.0)
+
+    def test_adaptive_single_resolution_reports_unknown_convergence(self) -> None:
+        result = cdtw_adaptive([0.0, 1.0, 0.0], [0.0, 1.0], initial_grid_size=64,
+                               max_grid_size=64)
+        self.assertIsNone(result.converged)
+        self.assertIsNone(result.estimated_error)
+        self.assertEqual(len(result.history), 1)
+
+    def test_adaptive_normalized_and_extreme_grid_sizes(self) -> None:
+        p = [0.0, 1.0, 0.0, 1.0]
+        q = [0.0, 1.0]
+        raw = cdtw_adaptive(p, q, initial_grid_size=16, max_grid_size=256)
+        scaled = cdtw_adaptive(
+            p, q, initial_grid_size=16, max_grid_size=256, normalized=True
+        )
+        self.assertTrue(scaled.normalized)
+        self.assertAlmostEqual(scaled.distance, raw.distance / 4.0, places=12)
+        self.assertTrue(np.isfinite(cdtw_distance(p, q, grid_size=1)))
+
+    def test_adaptive_invalid_arguments(self) -> None:
+        with self.assertRaises(ValueError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], initial_grid_size=64, max_grid_size=32)
+        with self.assertRaises(ValueError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], rtol=-1.0)
+        with self.assertRaises(ValueError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], atol=-1.0)
+        with self.assertRaises(ValueError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], initial_grid_size=0)
+        with self.assertRaises(TypeError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], return_path="yes")
+        with self.assertRaises(TypeError):
+            cdtw_adaptive([0.0, 1.0], [0.0, 1.0], normalized=1)
 
     def test_vertex_survives_a_segment_shorter_than_the_merge_tolerance(self) -> None:
         # A segment far below eps times the total arc length used to be merged

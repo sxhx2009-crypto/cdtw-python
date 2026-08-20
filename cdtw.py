@@ -11,7 +11,8 @@ closed form.  Thus no numerical quadrature is used; approximation enters only
 through the sampled positions at which a path may cross a cell boundary.
 
 The implementation is a practical reference implementation.  It is not the
-paper's exact O((n + m)^5) piecewise-quadratic boundary-propagation algorithm.
+paper's exact piecewise-quadratic boundary-propagation algorithm, which runs
+in O(n^5) for a pair of one-dimensional curves of complexity at most n.
 
 The sample indices are not time coordinates: only the one-dimensional value
 curve remains after arc-length parameterization.  In particular, two constant
@@ -29,6 +30,9 @@ FloatArray = NDArray[np.float64]
 
 
 _DEFAULT_MEMORY_LIMIT_MIB = 512.0
+# In-cell costs evaluate height**2, so the usable input range is bounded by the
+# square root of the float64 maximum rather than by finiteness alone.
+_MAX_SAFE_MAGNITUDE = float(np.sqrt(np.finfo(np.float64).max))
 # A cell transition temporarily holds several dense float/bool matrices.  This
 # deliberately conservative factor supplements the exact persistent-array
 # estimate and prevents a single large cell from exhausting process memory.
@@ -108,11 +112,36 @@ def _as_curve(values: ArrayLike, name: str) -> _ArcLengthCurve:
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
 
+    # In-cell costs square the height difference, so finite inputs are not
+    # enough: values past sqrt(float64 max) overflow inside the cost matrix and
+    # would otherwise return inf behind a burst of RuntimeWarnings.
+    largest = float(np.max(np.abs(array)))
+    if largest > _MAX_SAFE_MAGNITUDE:
+        raise ValueError(
+            f"{name} has values up to {largest:.3e}; CDTW costs square the "
+            f"height difference, so magnitudes above {_MAX_SAFE_MAGNITUDE:.3e} "
+            "overflow.  Rescale the inputs before calling."
+        )
+
     # Repeated consecutive vertices form zero-length segments.  Removing them
     # preserves the polygonal curve and makes the arc-length coordinates
     # strictly increasing whenever the total length is positive.
     keep = np.concatenate(([True], np.diff(array) != 0.0))
     vertices = np.ascontiguousarray(array[keep], dtype=np.float64)
+
+    if vertices.size > 2:
+        # Consecutive segments pointing the same way are one straight piece of
+        # the same one-dimensional curve, so only the turning points carry
+        # shape.  Dropping the rest leaves the curve identical while removing
+        # parameter-space cells, and it makes the result independent of how a
+        # straight run happened to be sampled: without this, inserting a
+        # collinear vertex split a cell and could only raise the cost, because
+        # a path may cross a cell boundary solely at a sampled coordinate.
+        directions = np.sign(np.diff(vertices))
+        turning = np.concatenate(
+            ([True], directions[1:] != directions[:-1], [True])
+        )
+        vertices = np.ascontiguousarray(vertices[turning], dtype=np.float64)
 
     if vertices.size == 1:
         breaks = np.array([0.0], dtype=np.float64)
@@ -725,12 +754,16 @@ def cdtw(
         One-dimensional finite numeric sequences.  Each sequence is treated as
         the ordered vertices of a polygonal curve in R.
     grid_size:
-        Number of regular arc-length intervals along the longer curve.
-        Original vertex coordinates from both curves are inserted as well.
+        Number of regular arc-length intervals along the longer curve, not
+        per segment.  A curve with many segments therefore gets few regular
+        samples inside each one; original vertex coordinates from both curves
+        are always inserted, so every cell corner remains available.
         Memory is quadratic in the resulting grid dimensions; runtime also
         depends on how many boundary samples fall in each original cell.
     return_path:
-        Reconstruct the monotone matching when true.
+        Reconstruct the monotone matching when true.  This stores four extra
+        int64 predecessor arrays beside the cost array, so the persistent
+        dynamic-programming memory is about five times larger.
     normalized:
         Divide the integral by ``length(curve1) + length(curve2)``.  The raw
         paper definition is returned by default.
@@ -853,6 +886,19 @@ def cdtw_adaptive(
     maximum change in that recent window is reported as ``estimated_error``.
     Neither this flag nor the reported change is a mathematical error bound on
     the true continuous optimum.
+
+    Two plateau guards apply, because a run of identical values is common and
+    on its own proves nothing.  A resolution step that leaves ``grid_shape``
+    unchanged cannot change the value and is not counted as evidence, and an
+    all-identical window reports the last observed movement rather than zero.
+    Even so, a plateau spanning the whole window can still precede a further
+    decrease, so treat ``converged=True`` at a small ``grid_size`` as weak.
+    Richardson extrapolation is deliberately not used: the observed order of
+    convergence is 2 only for simple inputs and is erratic in general, and on
+    a plateau it would report an error estimate of exactly zero.
+
+    ``converged`` is ``None`` when only one resolution was evaluated, since
+    there is nothing to compare against.
     """
 
     for name, value in (
@@ -875,23 +921,31 @@ def cdtw_adaptive(
         raise TypeError("convergence_checks must be an integer")
     if convergence_checks < 1:
         raise ValueError("convergence_checks must be at least 1")
+    for name, value in (("return_path", return_path), ("normalized", normalized)):
+        if not isinstance(value, (bool, np.bool_)):
+            raise TypeError(f"{name} must be a bool")
     checked_memory_limit = _validate_memory_limit(memory_limit_mib)
 
     history: list[tuple[int, float]] = []
     recent_differences: list[float] = []
     recent_passes: list[bool] = []
     previous: float | None = None
+    previous_shape: tuple[int, int] | None = None
+    last_movement: float | None = None
     estimated_error: float | None = None
-    converged = False
+    converged: bool | None = None
     size = int(initial_grid_size)
     last: CDTWResult | None = None
 
     while True:
+        # The path is reconstructed in the loop rather than by repeating the
+        # final resolution afterwards, which used to run the most expensive
+        # dynamic program twice.
         last = cdtw(
             curve1,
             curve2,
             grid_size=size,
-            return_path=False,
+            return_path=return_path,
             normalized=normalized,
             memory_limit_mib=checked_memory_limit,
         )
@@ -900,31 +954,41 @@ def cdtw_adaptive(
         if previous is not None:
             difference = abs(last.distance - previous)
             threshold = atol + rtol * abs(last.distance)
+            if last.grid_shape == previous_shape:
+                # Doubling grid_size need not add a coordinate once the curve
+                # vertices dominate the grid.  An unchanged grid gives an
+                # identical value by construction, so it is not evidence.
+                difference = last_movement if last_movement is not None else 0.0
+            elif difference > 0.0:
+                last_movement = difference
             recent_differences.append(difference)
             recent_passes.append(difference <= threshold)
             window = recent_differences[-int(convergence_checks) :]
             estimated_error = max(window)
-            if len(window) == convergence_checks and all(
-                recent_passes[-int(convergence_checks) :]
+            if last_movement is not None and all(
+                value == 0.0 for value in window
             ):
-                converged = True
+                # A run of identical values is a finite-grid plateau, not proof
+                # of convergence: refinement often resumes decreasing later.
+                # Never claim less than the last observed movement.
+                estimated_error = last_movement
+            converged = (
+                len(window) == convergence_checks
+                and all(recent_passes[-int(convergence_checks) :])
+                and estimated_error <= threshold
+            )
+            if converged:
                 break
         if size >= max_grid_size:
+            if previous is not None:
+                converged = bool(converged)
             break
 
         previous = last.distance
+        previous_shape = last.grid_shape
         size = min(size * 2, int(max_grid_size))
 
     assert last is not None
-    if return_path:
-        last = cdtw(
-            curve1,
-            curve2,
-            grid_size=size,
-            return_path=True,
-            normalized=normalized,
-            memory_limit_mib=checked_memory_limit,
-        )
 
     return CDTWResult(
         distance=last.distance,
