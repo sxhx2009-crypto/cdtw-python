@@ -189,12 +189,36 @@ class CDTWTests(unittest.TestCase):
             cdtw_distance([0.0, 1e200, 0.0], [0.0, 1e200])
         with self.assertRaises(ValueError):
             cdtw_distance([0.0, 1.0], [0.0, 1e300])
-        # Just inside the limit still computes without warnings.
+
+    def test_overflow_of_the_pair_is_rejected_not_returned_as_inf(self) -> None:
+        # Checking each curve alone is not sufficient.  Both of these have
+        # individually representable values and used to return inf behind
+        # RuntimeWarnings: the first overflows cumsum in the axis
+        # initialization, the second overflows start**2 + end**2 in the
+        # same-direction closed form.
         with warnings.catch_warnings():
             warnings.simplefilter("error")
-            self.assertTrue(
-                np.isfinite(cdtw_distance([0.0, 1e150], [0.0, 2e150], grid_size=8))
-            )
+            with self.assertRaises(ValueError):
+                cdtw_distance(
+                    np.tile([1e153, -1e153], 100), [0.0, 1e153], grid_size=8
+                )
+            with self.assertRaises(ValueError):
+                cdtw_distance([0.0, 1e154], [0.0, 2e153], grid_size=8)
+
+    def test_large_but_representable_pairs_still_compute(self) -> None:
+        # The guard is an upper bound, so it must not reject inputs that do fit.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            for p, q, expected in (
+                ([0.0, 1e150], [0.0, 2e150], 5e299),
+                (np.tile([1e152, -1e152], 25), [0.0, 1e152], None),
+                (np.tile([1e100, -1e100], 2500), [0.0, 1e100], None),
+            ):
+                with self.subTest(p=np.shape(p)):
+                    value = cdtw_distance(p, q, grid_size=8, memory_limit_mib=None)
+                    self.assertTrue(np.isfinite(value))
+                    if expected is not None:
+                        self.assertAlmostEqual(value / expected, 1.0, places=12)
 
     def test_adaptive_path_matches_reported_distance(self) -> None:
         p = [0.4, -1.1, 0.9, 0.2, -0.7]

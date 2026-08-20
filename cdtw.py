@@ -71,7 +71,10 @@ class CDTWResult:
         It is ``None`` for a single-resolution run.
     estimated_error:
         Maximum absolute change over the most recent adaptive convergence
-        window.  This is a convergence diagnostic, not a certified error bound.
+        window.  When every change in that window is zero the value falls back
+        to the last change actually observed, because a plateau is not evidence
+        of convergence; it can therefore exceed the most recent steps.  This is
+        a convergence diagnostic, not a certified error bound.
     history:
         ``(grid_size, distance)`` pairs produced during refinement.
     """
@@ -283,6 +286,34 @@ def _joint_parameter_grids(
         y = _with_endpoint(common, curve2.length)
 
     return x, y, step
+
+
+def _validate_cost_range(curve1: _ArcLengthCurve, curve2: _ArcLengthCurve) -> None:
+    """Reject input pairs whose cost arithmetic would overflow float64.
+
+    Checking each curve on its own is not enough.  Two terms can overflow even
+    when every value is individually representable: the same-direction closed
+    form evaluates ``start**2 + end**2``, and the axis initialization
+    accumulates the whole integral with ``cumsum``.  Both are bounded here by
+    the largest height the pair can produce and by the total L1 path length,
+    which is exactly ``length(curve1) + length(curve2)``.
+    """
+
+    height = float(np.max(np.abs(curve1.vertices))) + float(
+        np.max(np.abs(curve2.vertices))
+    )
+    total_length = curve1.length + curve2.length
+    with np.errstate(over="ignore", invalid="ignore"):
+        squared_term = 2.0 * height * height
+        accumulated_term = total_length * height
+    if not (np.isfinite(squared_term) and np.isfinite(accumulated_term)):
+        raise ValueError(
+            "the two curves overflow float64 CDTW arithmetic: the largest "
+            f"height is {height:.3e} and the total arc length is "
+            f"{total_length:.3e}, so the accumulated integral (bounded by "
+            "length * height) or the squared in-cell term (2 * height**2) "
+            "exceeds the float64 range.  Rescale the inputs before calling."
+        )
 
 
 def _validate_memory_limit(memory_limit_mib: float | None) -> float | None:
@@ -791,6 +822,7 @@ def cdtw(
 
     first = _as_curve(curve1, "curve1")
     second = _as_curve(curve2, "curve2")
+    _validate_cost_range(first, second)
     x, y, step = _joint_parameter_grids(first, second, int(grid_size))
     _enforce_memory_limit(
         first,
@@ -980,8 +1012,6 @@ def cdtw_adaptive(
             if converged:
                 break
         if size >= max_grid_size:
-            if previous is not None:
-                converged = bool(converged)
             break
 
         previous = last.distance
