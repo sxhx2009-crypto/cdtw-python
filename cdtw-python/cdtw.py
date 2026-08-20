@@ -17,11 +17,6 @@ The sample indices are not time coordinates: only the one-dimensional value
 curve remains after arc-length parameterization.  In particular, two constant
 curves both have zero parameter length and therefore have CDTW integral zero
 even when their constant values differ.
-skdl;adk
-
-dfjkj
-
-lkkjj
 """
 
 from __future__ import annotations
