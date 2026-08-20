@@ -64,14 +64,14 @@ print(distance)
 결과 재현을 위해 릴리스 태그를 만드는 것이 좋습니다.
 
 ```bash
-git tag -a v0.2.3 -m "Validated CDTW v0.2.3"
-git push origin v0.2.3
+git tag -a v0.2.4 -m "Validated CDTW v0.2.4"
+git push origin v0.2.4
 ```
 
 이 버전을 고정 설치하려면:
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.3"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.4"
 ```
 
 연구 코드에서는 바뀔 수 있는 `main`보다 태그 또는 전체 커밋 해시를 고정하는
@@ -99,10 +99,10 @@ git commit -m "Describe the change"
 git push
 ```
 
-## 7. 공개 전 라이선스 선택
+## 7. 라이선스
 
-현재 패키지는 사용자가 권리 조건을 직접 결정할 수 있도록 `LICENSE`를 넣지
-않았습니다. 다른 사람이 복제·수정·배포하게 하려면 공개 전에 GitHub의
-**Add file → Create new file → Choose a license template**에서 목적에 맞는
-라이선스를 선택하세요. 라이선스가 없으면 일반적으로 저작권자가 모든 권리를
-보유한 상태로 취급됩니다.
+이 저장소는 MIT License를 사용합니다. 전문은 루트의 `LICENSE` 파일에 있고,
+저작권자는 두 기여자 `sj10132`, `sxhx2009-crypto` 입니다. 복제·수정·배포·
+상업적 사용이 모두 허용되며, 저작권 고지와 라이선스 전문을 함께 포함하는
+조건만 지키면 됩니다. `pyproject.toml`에도 SPDX 표기로 선언돼 있어 빌드된
+패키지에 `LICENSE`가 함께 실립니다.

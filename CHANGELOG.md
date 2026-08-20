@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.4 — 2026-08-20
+
+- MIT License 추가. 저작권자는 두 기여자 `sj10132`, `sxhx2009-crypto`.
+  이전에는 `LICENSE`가 없어 공개 저장소인데도 법적으로 모든 권리 유보 상태라
+  다른 사람이 복제·수정·배포할 수 없었다.
+- `pyproject.toml`에 PEP 639 SPDX 표기(`license = "MIT"`,
+  `license-files = ["LICENSE"]`)를 선언. 빌드된 wheel의 메타데이터에
+  `License-Expression: MIT`가 실리고 `LICENSE`가 동봉되는 것을 확인했다.
+- README와 업로드 가이드의 "라이선스를 아직 고르지 않았다"는 안내를 갱신.
+
 ## 0.2.3 — 2026-08-20
 
 - 0.2.2의 overflow 방어가 불완전했던 것을 수정. 개별 값만 검사해서는 부족하다.

@@ -4,9 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cdtw-boundary-sampling"
-version = "0.2.3"
+version = "0.2.4"
 description = "A validated boundary-sampling approximation of 1-D Continuous Dynamic Time Warping"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24",

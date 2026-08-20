@@ -12,10 +12,10 @@ GitHub Actions가 Python 3.10~3.14 단위 테스트와, 예제·검증 스위트
 ## GitHub에서 바로 설치
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.3"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.4"
 ```
 
-최신 개발본이 필요하면 `@v0.2.3` 대신 `@main`을 사용합니다.
+최신 개발본이 필요하면 `@v0.2.4` 대신 `@main`을 사용합니다.
 자세한 최초 업로드 방법은 [`GITHUB_UPLOAD_GUIDE_KO.md`](GITHUB_UPLOAD_GUIDE_KO.md)에
 정리되어 있습니다.
 
@@ -177,13 +177,15 @@ validation/validation_suite.py  전문 검증 스위트
 validation/VALIDATION_REPORT.md 검증 보고서
 .github/workflows/tests.yml     자동 CI 테스트
 .gitignore                      빌드·캐시 산출물 제외 규칙
+LICENSE                         MIT 라이선스 전문
 ```
 
 ## 라이선스
 
-권리 조건을 사용자가 직접 선택할 수 있도록 아직 `LICENSE` 파일을 포함하지
-않았습니다. 저장소를 공개하고 다른 사람의 복제·수정·배포를 허용하려면
-`GITHUB_UPLOAD_GUIDE_KO.md`의 안내에 따라 공개 전에 라이선스를 선택하세요.
+MIT License. 전문은 [`LICENSE`](LICENSE)에 있습니다.
+저작권자는 두 기여자 `sj10132`, `sxhx2009-crypto` 입니다.
+복제·수정·배포·상업적 사용이 모두 허용되며, 저작권 고지와 라이선스 전문을
+함께 포함하기만 하면 됩니다.
 
 ## 계산량과 주의점
 
