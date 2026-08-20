@@ -5,6 +5,7 @@ import numpy as np
 from cdtw import (
     _as_curve,
     _integral_mean_abs_linear,
+    _joint_parameter_grids,
     cdtw,
     cdtw_adaptive,
     cdtw_distance,
@@ -71,6 +72,86 @@ class CDTWTests(unittest.TestCase):
         self.assertAlmostEqual(
             cdtw_distance(coarse, resampled, grid_size=7), 0.0, places=12
         )
+
+    def test_collinear_resampling_deviates_only_at_finite_resolution(self) -> None:
+        # Inserting collinear vertices leaves the polygonal curve unchanged but
+        # splits parameter-space cells, and a path may only cross a cell
+        # boundary at a sampled coordinate.  The extra constraint can only
+        # raise the cost, and the gap has to vanish under refinement.  The
+        # older "resampling invariance" test compared two spellings of one
+        # curve against itself, where the answer is zero either way, so it
+        # could not observe this at all.
+        curve1 = [1.834, 0.717, 0.299, 0.282, -1.425]
+        curve2 = [1.911, -1.869]
+        midpoints = [
+            value
+            for index in range(len(curve1) - 1)
+            for value in (curve1[index], 0.5 * (curve1[index] + curve1[index + 1]))
+        ]
+        refined = midpoints + [curve1[-1]]
+
+        # The largest grid needs more than the default guard allows: a two-cell
+        # pair puts every boundary sample into one cell transition matrix.
+        previous = None
+        for grid_size, bound in ((128, 1e-2), (512, 1e-3), (2048, 1e-5)):
+            coarse = cdtw_distance(
+                curve1, curve2, grid_size=grid_size, memory_limit_mib=None
+            )
+            split = cdtw_distance(
+                refined, curve2, grid_size=grid_size, memory_limit_mib=None
+            )
+            self.assertGreater(split, coarse - 1e-12)
+            self.assertLess(abs(split - coarse) / coarse, bound)
+            if previous is not None:
+                self.assertLessEqual(coarse, previous + 1e-12)
+            previous = coarse
+
+    def test_vertex_survives_a_segment_shorter_than_the_merge_tolerance(self) -> None:
+        # A segment far below eps times the total arc length used to be merged
+        # out of the parameter grid, after which the vertex had no coordinate
+        # and _break_indices raised RuntimeError.
+        for exponent in range(6, 20):
+            with self.subTest(exponent=exponent):
+                value = cdtw_distance(
+                    [0.0, 10.0**-exponent, 1e6], [0.0, 1e6], grid_size=32
+                )
+                self.assertTrue(np.isfinite(value))
+        self.assertTrue(
+            np.isfinite(cdtw_distance([0.0, 1e-6, 1e12], [0.0, 1e12], grid_size=64))
+        )
+
+    def test_curves_far_below_unit_scale_keep_their_integral(self) -> None:
+        # The whole curve is shorter than the merge tolerance measured against
+        # max(1, length).  Every sample used to collapse onto one coordinate,
+        # which silently reported 0.0 (or inf) instead of the true integral.
+        for exponent in range(10, 18):
+            with self.subTest(exponent=exponent):
+                length = 10.0**-exponent
+                distance = cdtw_distance([0.0, length], [-1.0, -1.0], grid_size=24)
+                exact = length * (1.0 + (1.0 + length)) / 2.0
+                self.assertAlmostEqual(distance / exact, 1.0, places=9)
+
+    def test_shared_grid_keeps_vertices_when_lengths_differ_by_one_ulp(self) -> None:
+        # Nearly equal arc lengths make both curves share one coordinate set.
+        # Trimming that set per curve has to keep it strictly increasing and
+        # must not drop a vertex of either curve.
+        length = 2.0
+        longer = float(np.nextafter(length, np.inf))
+        for curve1, curve2 in (
+            ([0.0, 1.0, length], [0.0, 0.4, longer]),
+            ([0.0, longer], [0.0, length]),
+            ([0.0, float(np.nextafter(length, -np.inf)), length], [0.0, length]),
+        ):
+            with self.subTest(curve1=curve1, curve2=curve2):
+                first = _as_curve(curve1, "curve1")
+                second = _as_curve(curve2, "curve2")
+                x, y, _ = _joint_parameter_grids(first, second, 16)
+                for grid, curve in ((x, first), (y, second)):
+                    self.assertTrue(np.all(np.diff(grid) > 0.0))
+                    self.assertEqual(grid[0], 0.0)
+                    self.assertEqual(grid[-1], curve.length)
+                    for vertex in curve.breaks:
+                        self.assertTrue(np.any(grid == vertex))
 
     def test_opposite_directions_have_closed_form_cost(self) -> None:
         # P(x)=x and Q(y)=2-y on [0,2].  Therefore h=|x+y-2| and

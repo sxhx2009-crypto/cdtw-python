@@ -25,8 +25,6 @@ from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
-
-
 FloatArray = NDArray[np.float64]
 
 
@@ -128,21 +126,76 @@ def _as_curve(values: ArrayLike, name: str) -> _ArcLengthCurve:
     return _ArcLengthCurve(vertices=vertices, breaks=breaks)
 
 
-def _unique_sorted(values: FloatArray, scale: float) -> FloatArray:
-    """Sort coordinates and merge only round-off-level near duplicates."""
+def _grid_merge_tolerance(scale: float) -> float:
+    """Spacing below which two arc-length coordinates denote the same point."""
+
+    return 32.0 * np.finfo(np.float64).eps * max(1.0, scale)
+
+
+def _unique_sorted(
+    values: FloatArray, scale: float, anchors: FloatArray | None = None
+) -> FloatArray:
+    """Sort coordinates and merge only round-off-level near duplicates.
+
+    ``anchors`` holds curve-vertex coordinates.  The cell decomposition and the
+    closed-form in-cell cost are defined relative to those vertices, so an
+    anchor must survive merging exactly: it absorbs nearby non-anchors instead
+    of being absorbed.  Without this, a segment shorter than the merge
+    tolerance lost its grid coordinate and :func:`_break_indices` raised
+    ``RuntimeError`` -- the tolerance there is measured against the local
+    coordinate, while merging is measured against the whole curve length.
+    """
 
     values = np.sort(np.asarray(values, dtype=np.float64))
-    tolerance = 32.0 * np.finfo(np.float64).eps * max(1.0, scale)
-    merged = [float(values[0])]
-    for value in values[1:]:
-        value = float(value)
-        if value - merged[-1] <= tolerance:
-            # Keeping the larger value avoids leaving an endpoint just short
-            # of the actual curve length.
-            merged[-1] = value
-        else:
-            merged.append(value)
+    tolerance = _grid_merge_tolerance(scale)
+    anchor_set = (
+        frozenset()
+        if anchors is None
+        else frozenset(float(anchor) for anchor in np.asarray(anchors, dtype=np.float64))
+    )
+
+    merged: list[float] = []
+    is_anchor: list[bool] = []
+    for raw in values:
+        value = float(raw)
+        anchored = value in anchor_set
+        if merged and value - merged[-1] <= tolerance:
+            if value == merged[-1]:
+                is_anchor[-1] = is_anchor[-1] or anchored
+                continue
+            if is_anchor[-1]:
+                if not anchored:
+                    continue
+                # Two distinct vertices this close: keep both rather than
+                # silently deleting one of them.
+            elif anchored:
+                merged[-1] = value
+                is_anchor[-1] = True
+                continue
+            else:
+                # Keeping the larger value avoids leaving an endpoint just
+                # short of the actual curve length.
+                merged[-1] = value
+                continue
+        merged.append(value)
+        is_anchor.append(anchored)
     return np.asarray(merged, dtype=np.float64)
+
+
+def _with_endpoint(grid: FloatArray, length: float) -> FloatArray:
+    """Trim a shared coordinate set so it ends exactly at ``length``.
+
+    Used when both curves share one coordinate set: values at or beyond this
+    curve's own length are dropped and the exact endpoint is appended, which
+    keeps the result strictly increasing even when the two lengths differ by a
+    rounding step.
+    """
+
+    result = np.concatenate(
+        (grid[grid < length], np.array([length], dtype=np.float64))
+    )
+    result[0] = 0.0
+    return result
 
 
 def _joint_parameter_grids(
@@ -180,6 +233,7 @@ def _joint_parameter_grids(
                 )
             ),
             max_length,
+            anchors=own_breaks,
         )
         result[0] = 0.0
         result[-1] = length
@@ -191,11 +245,13 @@ def _joint_parameter_grids(
     # When the parameter lengths agree, sharing both coordinate sets preserves
     # the exact x=y matching of one geometric curve under different resampling.
     if abs(curve1.length - curve2.length) <= tolerance:
-        common = _unique_sorted(np.concatenate((x, y)), max_length)
-        x = common.copy()
-        y = common.copy()
-        x[-1] = curve1.length
-        y[-1] = curve2.length
+        common = _unique_sorted(
+            np.concatenate((x, y)),
+            max_length,
+            anchors=np.concatenate((curve1.breaks, curve2.breaks)),
+        )
+        x = _with_endpoint(common, curve1.length)
+        y = _with_endpoint(common, curve2.length)
 
     return x, y, step
 
@@ -233,8 +289,9 @@ def _estimate_peak_memory_mib(
 
     working_bytes = 0
     if curve1.breaks.size > 1 and curve2.breaks.size > 1:
-        x_vertices = _break_indices(x, curve1.breaks)
-        y_vertices = _break_indices(y, curve2.breaks)
+        scale = max(curve1.length, curve2.length)
+        x_vertices = _break_indices(x, curve1.breaks, scale)
+        y_vertices = _break_indices(y, curve2.breaks, scale)
         max_x_intervals = int(np.max(np.diff(x_vertices)))
         max_y_intervals = int(np.max(np.diff(y_vertices)))
         boundary_points = max_x_intervals + max_y_intervals + 1
@@ -285,15 +342,23 @@ def _integral_mean_abs_linear(start: FloatArray, end: FloatArray) -> FloatArray:
     return np.where(same_side, trapezoid, crossing)
 
 
-def _break_indices(grid: FloatArray, breaks: FloatArray) -> NDArray[np.int64]:
-    """Locate curve-segment endpoints in a grid, allowing round-off merging."""
+def _break_indices(
+    grid: FloatArray, breaks: FloatArray, scale: float
+) -> NDArray[np.int64]:
+    """Locate curve-segment endpoints in a grid, allowing round-off merging.
 
+    ``scale`` is the longer curve's arc length.  The tolerance must be measured
+    against that same scale as the grid merge tolerance, not against the local
+    coordinate: a vertex near the start of a long curve has a small coordinate
+    but is still stored with only ``eps * scale`` absolute resolution.
+    """
+
+    tolerance = 4.0 * _grid_merge_tolerance(scale)
     result: list[int] = []
     for value in breaks:
         right = int(np.searchsorted(grid, value))
         candidates = [index for index in (right - 1, right) if 0 <= index < grid.size]
         index = min(candidates, key=lambda candidate: abs(float(grid[candidate] - value)))
-        tolerance = 128.0 * np.finfo(np.float64).eps * max(1.0, abs(float(value)))
         if abs(float(grid[index] - value)) > tolerance:  # pragma: no cover
             raise RuntimeError("a curve vertex is missing from the parameter grid")
         result.append(index)
@@ -434,8 +499,9 @@ def _solve_boundary_sampled(
     if curve1.breaks.size == 1 or curve2.breaks.size == 1:
         return float(accumulated[-1, -1]), predecessor_data
 
-    x_vertices = _break_indices(x, curve1.breaks)
-    y_vertices = _break_indices(y, curve2.breaks)
+    scale = max(curve1.length, curve2.length)
+    x_vertices = _break_indices(x, curve1.breaks, scale)
+    y_vertices = _break_indices(y, curve2.breaks, scale)
 
     for cell_i in range(curve1.vertices.size - 1):
         ix0 = int(x_vertices[cell_i])
