@@ -18,6 +18,14 @@
 - 공선점 재표본화 편차, 극단적 크기비, 미소 곡선에 대한 회귀 테스트 4종 추가
   (14개 → 18개).
 - README에 공선점 재표본화 비불변성과 삼각부등식 미성립을 명시.
+- 저장소를 평탄화해 `pyproject.toml`을 루트로 이동. 이전에는 패키지가 한 단계
+  아래에 있어 문서에 적힌 `pip install "git+https://.../cdtw-python.git@..."`
+  이 루트에서 빌드 설정을 찾지 못해 실패했다.
+- `.github/workflows/tests.yml` 추가. README가 존재한다고 설명해 온 CI가 실제로는
+  없었다. Python 3.10~3.14 단위 테스트와 예제·검증 스위트·패키지 빌드를 검사한다.
+- `.gitignore` 추가 (`__pycache__/`, 빌드·coverage 산출물, `.venv/`). 추적 중인
+  `validation/validation_results.json`이 무시되지 않도록 넓은 패턴은 넣지 않았다.
+- 3.14 분류자 추가.
 
 ## 0.2.0 — 2026-08-19
 

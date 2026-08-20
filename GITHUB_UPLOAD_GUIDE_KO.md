@@ -1,7 +1,7 @@
 # GitHub 업로드 및 설치 가이드
 
 이 폴더는 그대로 하나의 GitHub 저장소로 사용할 수 있습니다. 아래 명령에서
-`YOUR_ID`는 자신의 GitHub 사용자 이름으로 바꾸세요.
+저장소 주소는 `sxhx2009-crypto/cdtw-python` 기준입니다.
 
 ## 1. GitHub에 빈 저장소 만들기
 
@@ -18,7 +18,7 @@ ZIP을 푼 `cdtw-python` 폴더에서 Git Bash 또는 VS Code 터미널을 열�
 git init -b main
 git add .
 git commit -m "Initial CDTW implementation"
-git remote add origin https://github.com/YOUR_ID/cdtw-python.git
+git remote add origin https://github.com/sxhx2009-crypto/cdtw-python.git
 git push -u origin main
 ```
 
@@ -47,7 +47,7 @@ gh repo create cdtw-python --public --source=. --remote=origin --push
 공개 저장소라면 다른 컴퓨터에서 다음 명령만으로 설치할 수 있습니다.
 
 ```bash
-py -m pip install "git+https://github.com/YOUR_ID/cdtw-python.git@main"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@main"
 ```
 
 macOS/Linux에서는 `py` 대신 `python3`를 사용할 수 있습니다. 설치 후:
@@ -64,14 +64,14 @@ print(distance)
 결과 재현을 위해 릴리스 태그를 만드는 것이 좋습니다.
 
 ```bash
-git tag -a v0.2.0 -m "Validated CDTW v0.2.0"
-git push origin v0.2.0
+git tag -a v0.2.1 -m "Validated CDTW v0.2.1"
+git push origin v0.2.1
 ```
 
 이 버전을 고정 설치하려면:
 
 ```bash
-py -m pip install "git+https://github.com/YOUR_ID/cdtw-python.git@v0.2.0"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.1"
 ```
 
 연구 코드에서는 바뀔 수 있는 `main`보다 태그 또는 전체 커밋 해시를 고정하는

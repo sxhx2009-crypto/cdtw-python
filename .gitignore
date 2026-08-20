@@ -1,0 +1,22 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Packaging output ("py -m build", setuptools build backend)
+build/
+dist/
+*.egg-info/
+
+# Coverage output (dev extra: coverage[toml], see [tool.coverage] in pyproject.toml)
+.coverage
+.coverage.*
+htmlcov/
+
+# Local virtual environment (README's setup uses .venv)
+.venv/
+
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
