@@ -2,6 +2,9 @@ name: tests
 
 on:
   push:
+    # Branches only.  An unfiltered "push" also fires for tag pushes, so every
+    # release ran the whole matrix twice on the same commit.
+    branches: ["**"]
   pull_request:
 
 permissions:

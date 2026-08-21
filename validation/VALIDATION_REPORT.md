@@ -67,7 +67,35 @@
 - 셀 내부 최적화를 사용함으로써 직선 격자보다 최대 `21.68%` 낮은 실행 가능한
   비용을 찾은 사례가 있었다.
 
-## 5. 검증 과정에서 발견하고 수정한 문제
+## 5. 지속적 통합(CI) 결과
+
+위 검증은 전부 Windows + Python 3.14 한 환경에서 돌린 것입니다. 부동소수점
+동작에 민감한 검사가 많아(`sqrt(float64 최대)` 경계, `eps` 스케일 허용오차,
+꼭짓점 병합의 `np.sign` 비교) 플랫폼과 인터프리터가 바뀌면 갈릴 여지가 있어,
+GitHub Actions로 Ubuntu에서 다섯 버전을 함께 검사합니다.
+
+기록 시점: 커밋 `12a3e98`, 실행 [#13](https://github.com/sxhx2009-crypto/cdtw-python/actions/runs/32447258600)
+
+| 잡 | 결과 | 소요 |
+|---|---|---:|
+| unit tests (Python 3.10) | success | 12s |
+| unit tests (Python 3.11) | success | 14s |
+| unit tests (Python 3.12) | success | 14s |
+| unit tests (Python 3.13) | success | 19s |
+| unit tests (Python 3.14) | success | 19s |
+| validation suite and package build | success | 32s |
+
+`validation` 잡은 단위 테스트와 별개로 이 문서의 검증 스위트 전체(2,381 시나리오),
+`examples/basic_usage.py`, `python -m build`까지 실행합니다. 즉 위 표의 마지막
+줄이 초록이면 이 보고서의 수치가 Linux에서도 재현된다는 뜻입니다.
+
+현재 상태는 README 상단의 배지가 실시간으로 보여줍니다. 위 표는 이 문서가
+기술하는 커밋 시점의 스냅샷입니다.
+
+`experiments/`의 실데이터 실험은 네트워크가 필요해 CI에서 실행하지 않습니다.
+그쪽 수치는 `experiments/sampling_rate_results.json`에 기록돼 있습니다.
+
+## 6. 검증 과정에서 발견하고 수정한 문제
 
 초기 전문 검사에서는 두 곡선을 동시에 역순으로 뒤집었을 때 일부 유한격자
 결과가 달라졌다. 300개 예비 사례에서 최대 상대 차이는 약 `1.41%`였다.
@@ -78,7 +106,7 @@
 최대 상대오차는 `1.04e-15`로 감소했다. 이 사례는 단순 단위 테스트보다
 변환 기반 검사가 필요한 이유를 보여준다.
 
-## 6. 후속 검토에서 발견한 안전성 문제와 수정
+## 7. 후속 검토에서 발견한 안전성 문제와 수정
 
 ### 6.1 `cdtw_adaptive` 평탄 구간 조기 종료
 
@@ -127,7 +155,7 @@ adaptive 결과를 요청 가능한 최종 `grid_size=1024` 결과와 비교했�
 서로 달라도 두 호 길이가 모두 0이므로 논문 정의상 적분값은 0이다. 이 동작을
 README와 모듈 문서 상단에 명시했다.
 
-## 7. 재표본화 수렴 진단
+## 8. 재표본화 수렴 진단
 
 원래 곡선의 각 선분 중점을 추가해 기하학적으로 같은 곡선을 만든 뒤 결과 차이를
 측정했다. 연속 CDTW의 참값은 재표본화에 불변이지만, 유한 경계 표본 근사는
@@ -143,7 +171,7 @@ README와 모듈 문서 상단에 명시했다.
 아니다. 재표본화가 많은 데이터에서는 `cdtw_adaptive`의 전체 해상도 이력을
 함께 기록하되 `converged`를 인증된 오차 보장으로 해석하지 않아야 한다.
 
-## 8. 스트레스 시험
+## 9. 스트레스 시험
 
 각각 120개 꼭짓점을 가진 무작위 곡선, 요청 격자 크기 512에서 측정했다.
 
@@ -156,24 +184,32 @@ README와 모듈 문서 상단에 명시했다.
 수 있다. 또한 `tracemalloc`은 운영체제 수준의 전체 프로세스 메모리 측정값과
 동일하지 않다.
 
-## 9. 코드 실행 범위
+## 10. 코드 실행 범위
 
 Python 표준 라이브러리 `trace`로 14개 단위 테스트를 실행했을 때 `cdtw.py`의
 실행 가능한 545개 라인이 모두 실행되어 라인 커버리지 100%로 보고됐다.
 이는 분기 조합 전체를 의미하는 branch coverage와는 다르므로, 본 보고서에서는
 무작위·변환·오라클 검사를 별도로 병행했다.
 
-## 10. 재현 방법
+## 11. 재현 방법
+
+저장소 루트에서 실행한다.
 
 ```bash
-python -m unittest -v test_cdtw.py
-python validation_suite.py
+python -m unittest discover -s tests -v
+python validation/validation_suite.py
 ```
 
 두 번째 명령은 고정 시드로 JSON 결과를 출력한다. 이번 실행의 원본 수치는
-`validation_results.json`에 보존되어 있다.
+`validation/validation_results.json`에 보존되어 있다.
 
-## 11. 최종 판정
+실데이터 실험은 별도이며 네트워크가 필요하다.
+
+```bash
+python experiments/sampling_rate_experiment.py
+```
+
+## 12. 최종 판정
 
 현재 구현은 다음 수준에서는 신뢰할 수 있다고 판단한다.
 

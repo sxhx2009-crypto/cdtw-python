@@ -12,10 +12,10 @@ GitHub Actions가 Python 3.10~3.14 단위 테스트와, 예제·검증 스위트
 ## GitHub에서 바로 설치
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.5"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.6"
 ```
 
-최신 개발본이 필요하면 `@v0.2.5` 대신 `@main`을 사용합니다.
+최신 개발본이 필요하면 `@v0.2.6` 대신 `@main`을 사용합니다.
 자세한 최초 업로드 방법은 [`GITHUB_UPLOAD_GUIDE_KO.md`](GITHUB_UPLOAD_GUIDE_KO.md)에
 정리되어 있습니다.
 
