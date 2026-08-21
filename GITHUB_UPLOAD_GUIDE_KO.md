@@ -64,14 +64,14 @@ print(distance)
 결과 재현을 위해 릴리스 태그를 만드는 것이 좋습니다.
 
 ```bash
-git tag -a v0.2.6 -m "Validated CDTW v0.2.6"
-git push origin v0.2.6
+git tag -a v0.2.7 -m "Validated CDTW v0.2.7"
+git push origin v0.2.7
 ```
 
 이 버전을 고정 설치하려면:
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.6"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.7"
 ```
 
 연구 코드에서는 바뀔 수 있는 `main`보다 태그 또는 전체 커밋 해시를 고정하는

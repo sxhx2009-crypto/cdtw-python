@@ -683,18 +683,29 @@ def _optimal_cell_path(
     path: list[tuple[float, float]] = [start]
     tolerance = 256.0 * np.finfo(np.float64).eps * max(1.0, duration)
 
+    def record() -> None:
+        # These coordinates are accumulated in floating point, so a leg can
+        # overshoot the exact endpoint by an ulp.  The exact ``end`` is
+        # appended afterwards, and without clamping that final step would run
+        # backwards -- invisible at unit scale but 7e-9 wide at scale 1e8,
+        # which breaks any caller asserting a monotone path.
+        nonlocal current_x, current_y
+        current_x = min(current_x, tx)
+        current_y = min(current_y, ty)
+        _append_distinct(path, (current_x, current_y))
+
     if toward_duration > tolerance:
         desired_height_rate = -float(np.sign(start_height))
         if desired_height_rate == p_direction:
             current_x += toward_duration
         else:
             current_y += toward_duration
-        _append_distinct(path, (current_x, current_y))
+        record()
 
     if valley_duration > tolerance:
         current_x += 0.5 * valley_duration
         current_y += 0.5 * valley_duration
-        _append_distinct(path, (current_x, current_y))
+        record()
 
     if away_duration > tolerance:
         desired_height_rate = float(np.sign(end_height))
@@ -702,7 +713,7 @@ def _optimal_cell_path(
             current_x += away_duration
         else:
             current_y += away_duration
-        _append_distinct(path, (current_x, current_y))
+        record()
 
     # Replace accumulated floating arithmetic with the exact sampled endpoint.
     _append_distinct(path, end)
@@ -789,6 +800,10 @@ def cdtw(
         per segment.  A curve with many segments therefore gets few regular
         samples inside each one; original vertex coordinates from both curves
         are always inserted, so every cell corner remains available.
+        The default is comfortable for a few dozen vertices and drifts high
+        beyond that -- measured excess over a converged grid is +0.02% at 29
+        vertices and +0.19% at 68.  Scale it with the vertex count, or use
+        :func:`cdtw_adaptive`, for longer series.
         Memory is quadratic in the resulting grid dimensions; runtime also
         depends on how many boundary samples fall in each original cell.
     return_path:

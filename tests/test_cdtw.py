@@ -220,6 +220,23 @@ class CDTWTests(unittest.TestCase):
                     if expected is not None:
                         self.assertAlmostEqual(value / expected, 1.0, places=12)
 
+    def test_returned_path_is_monotone_at_large_scale(self) -> None:
+        # In-cell legs are accumulated in floating point and can overshoot the
+        # exact endpoint by an ulp, after which appending the exact endpoint
+        # stepped backwards.  At unit scale the backstep is ~1e-16 and easy to
+        # miss; at scale 1e8 it was 7e-9 wide, breaking any caller that asserts
+        # a monotone path.  The comparison here is exact, not tolerance-based.
+        rng = np.random.default_rng(3)
+        for scale in (1.0, 1e4, 1e8):
+            for _ in range(15):
+                p = np.round(rng.uniform(-2.0, 2.0, 5), 3) * scale
+                q = np.round(rng.uniform(-2.0, 2.0, 4), 3) * scale
+                with self.subTest(scale=scale, p=list(p)):
+                    path = cdtw(
+                        p, q, grid_size=32, return_path=True, memory_limit_mib=None
+                    ).parameter_path
+                    self.assertTrue(np.all(np.diff(path, axis=0) >= 0.0))
+
     def test_adaptive_path_matches_reported_distance(self) -> None:
         p = [0.4, -1.1, 0.9, 0.2, -0.7]
         q = [-0.3, 1.2, -0.9, 0.5]

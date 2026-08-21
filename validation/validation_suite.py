@@ -7,6 +7,14 @@ differential testing, refinement checks, edge cases, and a stress benchmark.
 
 from __future__ import annotations
 
+# Runnable straight from a fresh clone: Python puts this script's own
+# directory on sys.path, not the repository root, so add the root too.
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+
 from dataclasses import dataclass
 from decimal import Decimal, getcontext
 import json
@@ -17,7 +25,7 @@ import tracemalloc
 import numpy as np
 from numpy.typing import NDArray
 
-from cdtw import (
+from cdtw import (  # noqa: E402
     _as_curve,
     _estimate_peak_memory_mib,
     _joint_parameter_grids,

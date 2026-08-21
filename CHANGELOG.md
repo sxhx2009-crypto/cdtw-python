@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.2.7 — 2026-08-21
+
+- 반환 경로가 1 ulp 역행할 수 있던 문제 수정. `_optimal_cell_path`가 셀 내부
+  구간을 부동소수점으로 누적하다 정확한 종점을 살짝 넘어선 뒤, 마지막에 정확한
+  종점을 덧붙이면서 미세한 역행이 생겼다. 단위 스케일에서는 `8.9e-16`이라
+  눈에 띄지 않지만 스케일 `1e8`에서는 `7.5e-9`가 되어, 경로 단조성을 단언하는
+  호출자가 깨진다. 중간점을 종점으로 클램프해 해결했고, 거리값은 바뀌지 않는다
+  (`return_path` 유무 차이 `0.000e+00`).
+- **문서에 적힌 실행 명령이 fresh clone에서 실패하던 문제 수정.** 파이썬은
+  스크립트가 있는 디렉터리를 `sys.path`에 넣지 CWD를 넣지 않으므로,
+  `python validation/validation_suite.py`와 `python examples/basic_usage.py`가
+  저장소 루트에서 `ModuleNotFoundError`를 냈다(CI는 `pip install -e .`를 먼저
+  해서 통과하고 있었다). 두 스크립트에 저장소 루트를 넣는 부트스트랩을 추가해
+  설치 없이도 실행되게 했다.
+- CI에 coverage 스텝 추가. `pyproject.toml`의 `[tool.coverage]`와
+  `fail_under = 90`이 아무 데서도 강제되지 않고 있었다. 현재 커버리지는 95%다.
+- 기본 `grid_size=256`이 긴 계열에서 부족하다는 점을 README와 docstring에
+  실측치와 함께 명시(꼭짓점 29개에서 +0.018%, 68개에서 +0.193% 초과). 값이
+  항상 상계라 오차는 한쪽으로만 생기며, `cdtw_adaptive`나 꼭짓점 수에 비례한
+  `grid_size` 지정을 권장 사용법으로 올렸다.
+- 큰 스케일에서의 경로 단조성 회귀 테스트 추가 (29개 → 30개).
+
 ## 0.2.6 — 2026-08-21
 
 - `validation/VALIDATION_REPORT.md`에 CI 결과 절 추가. 기존 검증 수치는 전부

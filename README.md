@@ -12,10 +12,10 @@ GitHub Actions가 Python 3.10~3.14 단위 테스트와, 예제·검증 스위트
 ## GitHub에서 바로 설치
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.6"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.7"
 ```
 
-최신 개발본이 필요하면 `@v0.2.6` 대신 `@main`을 사용합니다.
+최신 개발본이 필요하면 `@v0.2.7` 대신 `@main`을 사용합니다.
 자세한 최초 업로드 방법은 [`GITHUB_UPLOAD_GUIDE_KO.md`](GITHUB_UPLOAD_GUIDE_KO.md)에
 정리되어 있습니다.
 
@@ -155,7 +155,7 @@ python examples/basic_usage.py
 python validation/validation_suite.py
 ```
 
-29개 단위 테스트에는 동일 곡선의 거리 0, 대칭성, 단일 셀과 다중 셀 각각의
+30개 단위 테스트에는 동일 곡선의 거리 0, 대칭성, 단일 셀과 다중 셀 각각의
 닫힌형 해, 퇴화한 점-선분, 격자 세분 단조성, 독립 격자-DP 상계, 공선점
 재표본화의 정확한 불변성, 극단적 크기비와 미소 곡선, overflow 예외,
 `cdtw_adaptive`의 경로 비용 일치·평탄 구간·인자 검증이 포함됩니다.
@@ -211,11 +211,31 @@ MIT License. 전문은 [`LICENSE`](LICENSE)에 있습니다.
   남습니다.** `[0, 1, 2]`는 `[0, 2]`와 완전히 동일하게 처리되므로 공선점을
   끼워 넣는 재표본화는 **정확히 불변**입니다(무작위 200쌍 상대편차 `0.0`).
   셀 수가 줄어드는 부수 효과로 속도도 빨라집니다.
-- `grid_size`는 **선분당이 아니라 긴 곡선 전체의 분할 수**입니다. 따라서 꼭짓점이
-  많은 계열일수록 셀 하나에 들어가는 정규 표본이 줄어듭니다. `grid_size=256`
-  기준 실측으로 `n=50`이면 셀당 평균 10.1개지만 `n=200`이면 2.3개이고 셀의 22%는
-  내부 표본이 0개(코너로만 통과 가능)였습니다. 긴 계열에서는 `grid_size`를
-  꼭짓점 수에 비례해 키우거나 `cdtw_adaptive`를 쓰세요.
+- **긴 계열에서는 기본 `grid_size=256`이 부족합니다.** `grid_size`는 선분당이
+  아니라 **긴 곡선 전체의 분할 수**라, 꼭짓점이 많아질수록 셀 하나에 들어가는
+  정규 표본이 줄어듭니다. `grid_size=256` 기준 실측으로 `n=50`이면 셀당 평균
+  10.1개지만 `n=200`이면 2.3개이고 셀의 22%는 내부 표본이 0개(코너로만 통과
+  가능)였습니다. 값은 항상 참 최적값의 **상계**이므로 오차는 한쪽으로만 생깁니다.
+
+  | 꼭짓점 수 | `grid_size=256`의 초과 오차 |
+  |---:|---:|
+  | 7 | +0.001% |
+  | 14 | +0.000% |
+  | 29 | +0.018% |
+  | 68 | +0.193% |
+
+  꼭짓점이 수십 개를 넘는 계열이라면 다음 중 하나를 쓰세요.
+
+  ```python
+  from cdtw import cdtw_adaptive, cdtw_distance, _as_curve
+
+  # 1) 권장: 해상도를 자동으로 올리며 안정화를 확인
+  result = cdtw_adaptive(p, q, initial_grid_size=64, max_grid_size=4096)
+
+  # 2) 또는 꼭짓점 수에 비례해 직접 지정
+  vertices = _as_curve(p, "p").vertices.size + _as_curve(q, "q").vertices.size
+  distance = cdtw_distance(p, q, grid_size=max(256, 16 * vertices))
+  ```
 - 입력 크기에는 상한이 있습니다. 개별 값뿐 아니라 **두 곡선의 조합**을 검사합니다.
   최대 높이 `H`와 총 호 길이 `L`에 대해 `2·H²`(셀 내부 제곱항)와 `L·H`(누적 적분)이
   float64 범위를 넘으면 `ValueError`를 냅니다. 값 각각은 표현 가능해도 누적합이
