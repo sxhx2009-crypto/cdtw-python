@@ -12,10 +12,10 @@ GitHub Actions가 Python 3.10~3.14 단위 테스트와, 예제·검증 스위트
 ## GitHub에서 바로 설치
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.4"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.5"
 ```
 
-최신 개발본이 필요하면 `@v0.2.4` 대신 `@main`을 사용합니다.
+최신 개발본이 필요하면 `@v0.2.5` 대신 `@main`을 사용합니다.
 자세한 최초 업로드 방법은 [`GITHUB_UPLOAD_GUIDE_KO.md`](GITHUB_UPLOAD_GUIDE_KO.md)에
 정리되어 있습니다.
 
@@ -166,6 +166,11 @@ python validation/validation_suite.py
 이번 검증의 방법과 수치는 `validation/VALIDATION_REPORT.md`와
 `validation/validation_results.json`에 정리되어 있습니다.
 
+실데이터로 논문의 샘플링 레이트 강건성 주장을 직접 측정한 실험은
+[`experiments/SAMPLING_RATE_REPORT_KO.md`](experiments/SAMPLING_RATE_REPORT_KO.md)에
+있습니다. 표본만 늘린 재표본화에서 CDTW 편차는 `0.00e+00`인 반면, 같은 조건에서
+DTW는 최대 299%, 경로길이 정규화 DTW도 최대 40% 틀립니다.
+
 ## 저장소 구조
 
 ```text
@@ -175,6 +180,7 @@ tests/test_cdtw.py              단위 및 회귀 테스트
 examples/basic_usage.py         실행 예제
 validation/validation_suite.py  전문 검증 스위트
 validation/VALIDATION_REPORT.md 검증 보고서
+experiments/                    실데이터 경험적 실험
 .github/workflows/tests.yml     자동 CI 테스트
 .gitignore                      빌드·캐시 산출물 제외 규칙
 LICENSE                         MIT 라이선스 전문

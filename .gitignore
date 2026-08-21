@@ -20,3 +20,6 @@ htmlcov/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Experiment download cache
+experiments/_cache/

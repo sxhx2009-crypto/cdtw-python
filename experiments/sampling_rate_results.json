@@ -1,0 +1,444 @@
+{
+  "datasets": {
+    "ett_OT": {
+      "fetched_from": "https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv (cached)",
+      "file_sha256": "f18de3ad269cef59bb07b5438d79bb3042d3be49bdeecf01c1cd6d29695ee066",
+      "length": 17420,
+      "series_sha256": "3f2bdc80b5c66450c165599d6da09cbe0f336c58eef0888655c1d96b6e066488",
+      "url": "https://raw.githubusercontent.com/zhouhaoyi/ETDataset/main/ETT-small/ETTh1.csv",
+      "window_a": {
+        "amplitude": 12.452,
+        "samples": 256,
+        "total_variation": 183.606,
+        "variation_over_amplitude": 14.75,
+        "vertex_fraction": 0.3281,
+        "vertices": 84
+      },
+      "window_b": {
+        "amplitude": 11.537,
+        "samples": 256,
+        "total_variation": 156.597,
+        "variation_over_amplitude": 13.57,
+        "vertex_fraction": 0.4141,
+        "vertices": 106
+      },
+      "windows": [
+        1000,
+        5000
+      ]
+    },
+    "sunspots": {
+      "fetched_from": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/monthly-sunspots.csv (cached)",
+      "file_sha256": "c4ec8cc57d9f6fb6ecdb3e1f37f25b6f4badd5124c55931052b0cd2fc3bc71f3",
+      "length": 2820,
+      "series_sha256": "21d3ec838228ee78ab0b2b1db4ae82713ff371baaef46f4699b824bcd4886637",
+      "url": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/monthly-sunspots.csv",
+      "window_a": {
+        "amplitude": 238.9,
+        "samples": 256,
+        "total_variation": 3385.0,
+        "variation_over_amplitude": 14.17,
+        "vertex_fraction": 0.5703,
+        "vertices": 146
+      },
+      "window_b": {
+        "amplitude": 129.2,
+        "samples": 256,
+        "total_variation": 2547.1,
+        "variation_over_amplitude": 19.71,
+        "vertex_fraction": 0.6484,
+        "vertices": 166
+      },
+      "windows": [
+        300,
+        1500
+      ]
+    },
+    "temps": {
+      "fetched_from": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/daily-min-temperatures.csv (cached)",
+      "file_sha256": "8b9de63ed6789492bf497625e7f9beb96a63d367b4b0a21754006f749fa5e5da",
+      "length": 3650,
+      "series_sha256": "bda389e96da53db471225267d246ad4c7ecf72bba2bc32b6f5c810f84f5cb434",
+      "url": "https://raw.githubusercontent.com/jbrownlee/Datasets/master/daily-min-temperatures.csv",
+      "window_a": {
+        "amplitude": 18.7,
+        "samples": 256,
+        "total_variation": 590.2,
+        "variation_over_amplitude": 31.56,
+        "vertex_fraction": 0.5312,
+        "vertices": 136
+      },
+      "window_b": {
+        "amplitude": 20.2,
+        "samples": 256,
+        "total_variation": 585.6,
+        "variation_over_amplitude": 28.99,
+        "vertex_fraction": 0.5664,
+        "vertices": 145
+      },
+      "windows": [
+        500,
+        2000
+      ]
+    }
+  },
+  "datasets_used": [
+    "ett_OT",
+    "sunspots",
+    "temps"
+  ],
+  "elapsed_seconds": 80.23336119999294,
+  "environment": {
+    "numpy": "2.5.2",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.4"
+  },
+  "grid_convergence": [
+    {
+      "distance": 6303.521867963056,
+      "grid_size": 16,
+      "relative_change": null
+    },
+    {
+      "distance": 6303.5218679630525,
+      "grid_size": 32,
+      "relative_change": 5.771343200348578e-16
+    },
+    {
+      "distance": 6303.5218679630525,
+      "grid_size": 64,
+      "relative_change": 0.0
+    },
+    {
+      "distance": 6303.5218679630525,
+      "grid_size": 128,
+      "relative_change": 0.0
+    },
+    {
+      "distance": 6303.521867963051,
+      "grid_size": 256,
+      "relative_change": 2.88567160017429e-16
+    },
+    {
+      "distance": 6303.521867963046,
+      "grid_size": 512,
+      "relative_change": 7.21417900043573e-16
+    }
+  ],
+  "grid_convergence_dataset": "ett_OT",
+  "grid_size": 64,
+  "noise_control": [
+    {
+      "decimation_ratios": {
+        "1/2": 0.9996306415184563,
+        "1/3": 0.9994312664778193,
+        "1/5": 1.0052186875474947
+      },
+      "sigma": 0.0,
+      "variation_over_amplitude": 6.0,
+      "vertices": 8
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.9965358359753338,
+        "1/3": 0.9989155147201002,
+        "1/5": 1.0052685507000716
+      },
+      "sigma": 0.001,
+      "variation_over_amplitude": 6.0,
+      "vertices": 14
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.8461404552129631,
+        "1/3": 0.8205588911890609,
+        "1/5": 0.8434600453701127
+      },
+      "sigma": 0.01,
+      "variation_over_amplitude": 6.26,
+      "vertices": 76
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.6571532540716116,
+        "1/3": 0.5514946431498653,
+        "1/5": 0.4162278266832347
+      },
+      "sigma": 0.05,
+      "variation_over_amplitude": 13.68,
+      "vertices": 310
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.6148664885514807,
+        "1/3": 0.3478676257403242,
+        "1/5": 0.2369799969133175
+      },
+      "sigma": 0.2,
+      "variation_over_amplitude": 42.32,
+      "vertices": 351
+    }
+  ],
+  "sampling_rate": {
+    "ett_OT": {
+      "reference": {
+        "cdtw": 6303.5218679630525,
+        "dtw": 6172.53201842308,
+        "dtw_normalized": 24.111453196965158
+      },
+      "rows": [
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 1.0000271045793092,
+          "dtw_ratio": 1.9961478532813557,
+          "samples": 511,
+          "transform": "upsample x2"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 1.0000361630287913,
+          "dtw_ratio": 2.9922957065627114,
+          "samples": 766,
+          "transform": "upsample x3"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 1.0000406966895996,
+          "dtw_ratio": 3.9884435598440673,
+          "samples": 1021,
+          "transform": "upsample x4"
+        },
+        {
+          "cdtw_ratio": 0.8301340849511196,
+          "dtw_normalized_ratio": 1.0019379404787319,
+          "dtw_ratio": 0.5009689702393659,
+          "samples": 128,
+          "transform": "decimate 1/2"
+        },
+        {
+          "cdtw_ratio": 0.7521114646694844,
+          "dtw_normalized_ratio": 1.001101001459943,
+          "dtw_ratio": 0.3363073676779496,
+          "samples": 86,
+          "transform": "decimate 1/3"
+        },
+        {
+          "cdtw_ratio": 0.5658869419572449,
+          "dtw_normalized_ratio": 0.9962948006073546,
+          "dtw_ratio": 0.2023723813733689,
+          "samples": 52,
+          "transform": "decimate 1/5"
+        },
+        {
+          "cdtw_ratio": 0.755884321385775,
+          "dtw_normalized_ratio": 0.9907738900731028,
+          "dtw_ratio": 0.9907738900731028,
+          "samples": 256,
+          "transform": "irregular sampling"
+        }
+      ],
+      "upsample_summary": {
+        "cdtw_max_deviation": 0.0,
+        "dtw_max_deviation": 2.9884435598440673,
+        "dtw_normalized_max_deviation": 4.069668959960637e-05
+      }
+    },
+    "sunspots": {
+      "reference": {
+        "cdtw": 68610.60447265622,
+        "dtw": 4178.099999999998,
+        "dtw_normalized": 10.471428571428566
+      },
+      "rows": [
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.8245708823066445,
+          "dtw_ratio": 1.7194059500730035,
+          "samples": 511,
+          "transform": "upsample x2"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.740747283370187,
+          "dtw_ratio": 2.3800451560916787,
+          "samples": 766,
+          "transform": "upsample x3"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.7068199433502731,
+          "dtw_ratio": 3.068200856848805,
+          "samples": 1021,
+          "transform": "upsample x4"
+        },
+        {
+          "cdtw_ratio": 0.7843577959067138,
+          "dtw_normalized_ratio": 1.179422794287259,
+          "dtw_ratio": 0.6118809985400065,
+          "samples": 128,
+          "transform": "decimate 1/2"
+        },
+        {
+          "cdtw_ratio": 0.306274075482015,
+          "dtw_normalized_ratio": 1.1532101368390595,
+          "dtw_ratio": 0.38151312797683173,
+          "samples": 86,
+          "transform": "decimate 1/3"
+        },
+        {
+          "cdtw_ratio": 0.1151721517459631,
+          "dtw_normalized_ratio": 1.0921048028824294,
+          "dtw_ratio": 0.2134941719920539,
+          "samples": 52,
+          "transform": "decimate 1/5"
+        },
+        {
+          "cdtw_ratio": 0.5545860635794149,
+          "dtw_normalized_ratio": 0.928684984364385,
+          "dtw_ratio": 0.9542878285448568,
+          "samples": 256,
+          "transform": "irregular sampling"
+        }
+      ],
+      "upsample_summary": {
+        "cdtw_max_deviation": 0.0,
+        "dtw_max_deviation": 2.068200856848805,
+        "dtw_normalized_max_deviation": 0.2931800566497269
+      }
+    },
+    "temps": {
+      "reference": {
+        "cdtw": 539.1195117187475,
+        "dtw": 420.9999999999997,
+        "dtw_normalized": 1.189265536723163
+      },
+      "rows": [
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.7402467367640346,
+          "dtw_ratio": 1.553681710213779,
+          "samples": 511,
+          "transform": "upsample x2"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.6429022785102704,
+          "dtw_ratio": 2.090340459224071,
+          "samples": 766,
+          "transform": "upsample x3"
+        },
+        {
+          "cdtw_ratio": 1.0,
+          "dtw_normalized_ratio": 0.5953530290771204,
+          "dtw_ratio": 2.6118171021377625,
+          "samples": 1021,
+          "transform": "upsample x4"
+        },
+        {
+          "cdtw_ratio": 0.5479926054197418,
+          "dtw_normalized_ratio": 1.07344251364754,
+          "dtw_ratio": 0.5185273159144896,
+          "samples": 128,
+          "transform": "decimate 1/2"
+        },
+        {
+          "cdtw_ratio": 0.4236515710530475,
+          "dtw_normalized_ratio": 1.1884586019681036,
+          "dtw_ratio": 0.3760095011876486,
+          "samples": 86,
+          "transform": "decimate 1/3"
+        },
+        {
+          "cdtw_ratio": 0.31868848725745363,
+          "dtw_normalized_ratio": 1.3039529194880712,
+          "dtw_ratio": 0.24679334916864623,
+          "samples": 52,
+          "transform": "decimate 1/5"
+        },
+        {
+          "cdtw_ratio": 0.557806966790959,
+          "dtw_normalized_ratio": 0.8692664291186708,
+          "dtw_ratio": 0.9036441975018951,
+          "samples": 256,
+          "transform": "irregular sampling"
+        }
+      ],
+      "upsample_summary": {
+        "cdtw_max_deviation": 0.0,
+        "dtw_max_deviation": 1.6118171021377625,
+        "dtw_normalized_max_deviation": 0.4046469709228796
+      }
+    }
+  },
+  "seed": 20260820,
+  "smoothing_dataset": "temps",
+  "smoothing_sweep": [
+    {
+      "decimation_ratios": {
+        "1/2": 0.5979292812196243,
+        "1/3": 0.5301409148700594,
+        "1/5": 0.3182758098035446
+      },
+      "samples": 512,
+      "smoothing_width": 1,
+      "variation_over_amplitude": 51.38,
+      "vertices": 274
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.880714683181294,
+        "1/3": 0.6896932306776169,
+        "1/5": 0.41056329612872083
+      },
+      "samples": 510,
+      "smoothing_width": 3,
+      "variation_over_amplitude": 25.3,
+      "vertices": 171
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.8707056532729296,
+        "1/3": 0.7821645985980488,
+        "1/5": 0.675476426236113
+      },
+      "samples": 506,
+      "smoothing_width": 7,
+      "variation_over_amplitude": 12.73,
+      "vertices": 171
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.8922272356482325,
+        "1/3": 0.821955009710908,
+        "1/5": 0.690795799948472
+      },
+      "samples": 498,
+      "smoothing_width": 15,
+      "variation_over_amplitude": 7.07,
+      "vertices": 165
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.8614063249667826,
+        "1/3": 0.8119740192630633,
+        "1/5": 0.7084821093133009
+      },
+      "samples": 482,
+      "smoothing_width": 31,
+      "variation_over_amplitude": 4.06,
+      "vertices": 131
+    },
+    {
+      "decimation_ratios": {
+        "1/2": 0.9100293566885295,
+        "1/3": 0.8777364754795461,
+        "1/5": 0.8199274723218996
+      },
+      "samples": 450,
+      "smoothing_width": 63,
+      "variation_over_amplitude": 2.58,
+      "vertices": 96
+    }
+  ],
+  "window_length": 256
+}
