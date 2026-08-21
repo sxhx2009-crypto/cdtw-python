@@ -10,6 +10,7 @@ from cdtw import (
     cdtw,
     cdtw_adaptive,
     cdtw_distance,
+    curve_vertex_count,
 )
 
 
@@ -105,6 +106,25 @@ class CDTWTests(unittest.TestCase):
         np.testing.assert_array_equal(
             _as_curve([0.0, 1.0, 2.0, 3.0], "run").vertices, np.array([0.0, 3.0])
         )
+
+    def test_curve_vertex_count(self) -> None:
+        # Public helper so callers can size grid_size without reaching for
+        # _as_curve.  It must report what the algorithm actually works on:
+        # duplicates and collinear runs carry no shape and are dropped.
+        self.assertEqual(curve_vertex_count([0.0, 1.0, 2.0, 3.0]), 2)
+        self.assertEqual(curve_vertex_count([0.0, 0.0, 0.0]), 1)
+        self.assertEqual(curve_vertex_count([0.0, 1.0, 0.0, 1.0]), 4)
+        self.assertEqual(curve_vertex_count([5.0]), 1)
+        # Never larger than the input, and matches the curve the solver builds.
+        rng = np.random.default_rng(7)
+        for _ in range(20):
+            values = np.round(rng.uniform(-2.0, 2.0, rng.integers(2, 12)), 1)
+            with self.subTest(values=list(values)):
+                count = curve_vertex_count(values)
+                self.assertLessEqual(count, len(values))
+                self.assertEqual(count, _as_curve(values, "values").vertices.size)
+        with self.assertRaises(ValueError):
+            curve_vertex_count([])
 
     def test_multi_cell_closed_form(self) -> None:
         # P=[0,1,0,1] against Q=[0,1] spans three parameter-space cells, so

@@ -779,6 +779,22 @@ def _reconstruct_path(
     return np.asarray(points, dtype=np.float64)
 
 
+def curve_vertex_count(values: ArrayLike, name: str = "curve") -> int:
+    """Vertices the input reduces to once it is read as a polygonal curve.
+
+    Repeated values and collinear runs carry no shape, so they are dropped;
+    this is therefore usually smaller than ``len(values)``.  It is the number
+    that governs cost: runtime and the approximation error both scale with the
+    vertex count rather than with how densely the curve was sampled, so it is
+    the right quantity to size ``grid_size`` against.
+
+    >>> curve_vertex_count([0.0, 1.0, 2.0, 3.0])   # one straight run
+    2
+    """
+
+    return int(_as_curve(values, name).vertices.size)
+
+
 def cdtw(
     curve1: ArrayLike,
     curve2: ArrayLike,
@@ -798,11 +814,16 @@ def cdtw(
     grid_size:
         Number of regular arc-length intervals along the longer curve, not
         per segment.  A curve with many segments therefore gets few regular
-        samples inside each one; original vertex coordinates from both curves
-        are always inserted, so every cell corner remains available.
-        The default is comfortable for a few dozen vertices and drifts high
-        beyond that -- measured excess over a converged grid is +0.02% at 29
-        vertices and +0.19% at 68.  Scale it with the vertex count, or use
+        samples inside each one.  Each axis additionally carries its own
+        curve's vertex coordinates exactly (and their reflections about that
+        curve's end), so every cell corner is available; the two axes share
+        one coordinate set only when the arc lengths agree.
+        The default is comfortable for a couple of dozen vertices and drifts
+        high beyond that: measured against a converged grid, the excess is at
+        worst +0.02% around 20 vertices but +0.98% around 150, and it varies
+        strongly between curve pairs rather than tracking the vertex count.
+        The drift is always upward, since every value is the cost of a feasible
+        path.  Size this with :func:`curve_vertex_count`, or use
         :func:`cdtw_adaptive`, for longer series.
         Memory is quadratic in the resulting grid dimensions; runtime also
         depends on how many boundary samples fall in each original cell.
@@ -1049,4 +1070,10 @@ def cdtw_adaptive(
     )
 
 
-__all__ = ["CDTWResult", "cdtw", "cdtw_adaptive", "cdtw_distance"]
+__all__ = [
+    "CDTWResult",
+    "cdtw",
+    "cdtw_adaptive",
+    "cdtw_distance",
+    "curve_vertex_count",
+]

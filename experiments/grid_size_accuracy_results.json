@@ -1,0 +1,425 @@
+{
+  "default_grid_size": 256,
+  "elapsed_seconds": 353.01903929997934,
+  "environment": {
+    "numpy": "2.5.2",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.4"
+  },
+  "instances_below_reference": 0,
+  "instances_per_bucket": 10,
+  "reference_grid_size": 2048,
+  "rows": [
+    {
+      "excess_percent": 0.01746615958526508,
+      "instance": 0,
+      "samples": 30,
+      "vertices": 18
+    },
+    {
+      "excess_percent": 0.0018508488839681844,
+      "instance": 1,
+      "samples": 30,
+      "vertices": 17
+    },
+    {
+      "excess_percent": 0.022765315789859138,
+      "instance": 2,
+      "samples": 30,
+      "vertices": 16
+    },
+    {
+      "excess_percent": 0.005680878256982793,
+      "instance": 3,
+      "samples": 30,
+      "vertices": 19
+    },
+    {
+      "excess_percent": 3.2534449994378724e-14,
+      "instance": 4,
+      "samples": 30,
+      "vertices": 19
+    },
+    {
+      "excess_percent": 1.7423693817848752e-14,
+      "instance": 5,
+      "samples": 30,
+      "vertices": 21
+    },
+    {
+      "excess_percent": 0.012076446690768286,
+      "instance": 6,
+      "samples": 30,
+      "vertices": 19
+    },
+    {
+      "excess_percent": 0.0,
+      "instance": 7,
+      "samples": 30,
+      "vertices": 17
+    },
+    {
+      "excess_percent": 0.0,
+      "instance": 8,
+      "samples": 30,
+      "vertices": 19
+    },
+    {
+      "excess_percent": 0.00545191967899115,
+      "instance": 9,
+      "samples": 30,
+      "vertices": 14
+    },
+    {
+      "excess_percent": 0.0030216367590367253,
+      "instance": 0,
+      "samples": 60,
+      "vertices": 29
+    },
+    {
+      "excess_percent": 0.03660443247249092,
+      "instance": 1,
+      "samples": 60,
+      "vertices": 30
+    },
+    {
+      "excess_percent": 0.022421221644993633,
+      "instance": 2,
+      "samples": 60,
+      "vertices": 31
+    },
+    {
+      "excess_percent": 0.001006057332415868,
+      "instance": 3,
+      "samples": 60,
+      "vertices": 35
+    },
+    {
+      "excess_percent": 0.01908937712791828,
+      "instance": 4,
+      "samples": 60,
+      "vertices": 35
+    },
+    {
+      "excess_percent": 0.0005173973167914,
+      "instance": 5,
+      "samples": 60,
+      "vertices": 28
+    },
+    {
+      "excess_percent": 0.0252066339373837,
+      "instance": 6,
+      "samples": 60,
+      "vertices": 35
+    },
+    {
+      "excess_percent": 0.0956145845692111,
+      "instance": 7,
+      "samples": 60,
+      "vertices": 38
+    },
+    {
+      "excess_percent": 0.0008693710162811581,
+      "instance": 8,
+      "samples": 60,
+      "vertices": 30
+    },
+    {
+      "excess_percent": 0.002989192500710673,
+      "instance": 9,
+      "samples": 60,
+      "vertices": 33
+    },
+    {
+      "excess_percent": 0.04825947474836822,
+      "instance": 0,
+      "samples": 100,
+      "vertices": 59
+    },
+    {
+      "excess_percent": 0.12491873178929504,
+      "instance": 1,
+      "samples": 100,
+      "vertices": 59
+    },
+    {
+      "excess_percent": 0.01082444149658859,
+      "instance": 2,
+      "samples": 100,
+      "vertices": 56
+    },
+    {
+      "excess_percent": 0.006027161365165919,
+      "instance": 3,
+      "samples": 100,
+      "vertices": 61
+    },
+    {
+      "excess_percent": 0.2726264878560649,
+      "instance": 4,
+      "samples": 100,
+      "vertices": 57
+    },
+    {
+      "excess_percent": 0.11042032192212728,
+      "instance": 5,
+      "samples": 100,
+      "vertices": 51
+    },
+    {
+      "excess_percent": 0.04484323384623478,
+      "instance": 6,
+      "samples": 100,
+      "vertices": 52
+    },
+    {
+      "excess_percent": 6.072727666688391e-05,
+      "instance": 7,
+      "samples": 100,
+      "vertices": 52
+    },
+    {
+      "excess_percent": 0.28421454624546344,
+      "instance": 8,
+      "samples": 100,
+      "vertices": 62
+    },
+    {
+      "excess_percent": 0.16370581987311011,
+      "instance": 9,
+      "samples": 100,
+      "vertices": 53
+    },
+    {
+      "excess_percent": 0.015521132337178485,
+      "instance": 0,
+      "samples": 150,
+      "vertices": 80
+    },
+    {
+      "excess_percent": 0.06474465656120144,
+      "instance": 1,
+      "samples": 150,
+      "vertices": 80
+    },
+    {
+      "excess_percent": 0.13039502446400686,
+      "instance": 2,
+      "samples": 150,
+      "vertices": 76
+    },
+    {
+      "excess_percent": 0.03741858626245209,
+      "instance": 3,
+      "samples": 150,
+      "vertices": 80
+    },
+    {
+      "excess_percent": 0.37183605471641307,
+      "instance": 4,
+      "samples": 150,
+      "vertices": 81
+    },
+    {
+      "excess_percent": 0.03977020189902475,
+      "instance": 5,
+      "samples": 150,
+      "vertices": 68
+    },
+    {
+      "excess_percent": 0.057855724760200136,
+      "instance": 6,
+      "samples": 150,
+      "vertices": 78
+    },
+    {
+      "excess_percent": 0.3731798176433711,
+      "instance": 7,
+      "samples": 150,
+      "vertices": 83
+    },
+    {
+      "excess_percent": 0.0047502550925740674,
+      "instance": 8,
+      "samples": 150,
+      "vertices": 81
+    },
+    {
+      "excess_percent": 1.5023647907719132e-13,
+      "instance": 9,
+      "samples": 150,
+      "vertices": 83
+    },
+    {
+      "excess_percent": 0.0901787922426117,
+      "instance": 0,
+      "samples": 200,
+      "vertices": 97
+    },
+    {
+      "excess_percent": 0.059411246652300555,
+      "instance": 1,
+      "samples": 200,
+      "vertices": 102
+    },
+    {
+      "excess_percent": 0.02034643118240917,
+      "instance": 2,
+      "samples": 200,
+      "vertices": 96
+    },
+    {
+      "excess_percent": 0.04424655885756962,
+      "instance": 3,
+      "samples": 200,
+      "vertices": 103
+    },
+    {
+      "excess_percent": 0.5515844620068856,
+      "instance": 4,
+      "samples": 200,
+      "vertices": 105
+    },
+    {
+      "excess_percent": 0.04677157936486418,
+      "instance": 5,
+      "samples": 200,
+      "vertices": 98
+    },
+    {
+      "excess_percent": 0.16716282271425933,
+      "instance": 6,
+      "samples": 200,
+      "vertices": 113
+    },
+    {
+      "excess_percent": 0.48614741410027557,
+      "instance": 7,
+      "samples": 200,
+      "vertices": 109
+    },
+    {
+      "excess_percent": 0.5513788661569371,
+      "instance": 8,
+      "samples": 200,
+      "vertices": 105
+    },
+    {
+      "excess_percent": 0.0803593905328103,
+      "instance": 9,
+      "samples": 200,
+      "vertices": 96
+    },
+    {
+      "excess_percent": 0.009815910404310018,
+      "instance": 0,
+      "samples": 280,
+      "vertices": 144
+    },
+    {
+      "excess_percent": 0.407928177260045,
+      "instance": 1,
+      "samples": 280,
+      "vertices": 149
+    },
+    {
+      "excess_percent": 0.10440319466849607,
+      "instance": 2,
+      "samples": 280,
+      "vertices": 150
+    },
+    {
+      "excess_percent": 0.03388629846390743,
+      "instance": 3,
+      "samples": 280,
+      "vertices": 154
+    },
+    {
+      "excess_percent": 0.15202203283702434,
+      "instance": 4,
+      "samples": 280,
+      "vertices": 149
+    },
+    {
+      "excess_percent": 0.9837318261178692,
+      "instance": 5,
+      "samples": 280,
+      "vertices": 140
+    },
+    {
+      "excess_percent": 0.09551896518927157,
+      "instance": 6,
+      "samples": 280,
+      "vertices": 143
+    },
+    {
+      "excess_percent": 0.08135651249995733,
+      "instance": 7,
+      "samples": 280,
+      "vertices": 151
+    },
+    {
+      "excess_percent": 0.015685976489903816,
+      "instance": 8,
+      "samples": 280,
+      "vertices": 149
+    },
+    {
+      "excess_percent": 0.1036480699572665,
+      "instance": 9,
+      "samples": 280,
+      "vertices": 147
+    }
+  ],
+  "seed": 20260821,
+  "summary": [
+    {
+      "max_percent": 0.022765315789859138,
+      "mean_percent": 0.006529156888588459,
+      "median_percent": 0.0036513842814796674,
+      "samples": 30,
+      "vertices_max": 21,
+      "vertices_min": 14
+    },
+    {
+      "max_percent": 0.0956145845692111,
+      "mean_percent": 0.020733990467723347,
+      "median_percent": 0.011055506943477504,
+      "samples": 60,
+      "vertices_max": 38,
+      "vertices_min": 28
+    },
+    {
+      "max_percent": 0.28421454624546344,
+      "mean_percent": 0.10659009464190852,
+      "median_percent": 0.07933989833524775,
+      "samples": 100,
+      "vertices_max": 62,
+      "vertices_min": 51
+    },
+    {
+      "max_percent": 0.3731798176433711,
+      "mean_percent": 0.10954714537365723,
+      "median_percent": 0.04881296332961244,
+      "samples": 150,
+      "vertices_max": 83,
+      "vertices_min": 68
+    },
+    {
+      "max_percent": 0.5515844620068856,
+      "mean_percent": 0.20975875638109232,
+      "median_percent": 0.085269091387711,
+      "samples": 200,
+      "vertices_max": 113,
+      "vertices_min": 96
+    },
+    {
+      "max_percent": 0.9837318261178692,
+      "mean_percent": 0.19879969638880512,
+      "median_percent": 0.09958351757326903,
+      "samples": 280,
+      "vertices_max": 154,
+      "vertices_min": 140
+    }
+  ]
+}

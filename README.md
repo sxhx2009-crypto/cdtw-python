@@ -12,10 +12,10 @@ GitHub Actions가 Python 3.10~3.14 단위 테스트와, 예제·검증 스위트
 ## GitHub에서 바로 설치
 
 ```bash
-py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.7"
+py -m pip install "git+https://github.com/sxhx2009-crypto/cdtw-python.git@v0.2.8"
 ```
 
-최신 개발본이 필요하면 `@v0.2.7` 대신 `@main`을 사용합니다.
+최신 개발본이 필요하면 `@v0.2.8` 대신 `@main`을 사용합니다.
 자세한 최초 업로드 방법은 [`GITHUB_UPLOAD_GUIDE_KO.md`](GITHUB_UPLOAD_GUIDE_KO.md)에
 정리되어 있습니다.
 
@@ -155,7 +155,7 @@ python examples/basic_usage.py
 python validation/validation_suite.py
 ```
 
-30개 단위 테스트에는 동일 곡선의 거리 0, 대칭성, 단일 셀과 다중 셀 각각의
+31개 단위 테스트에는 동일 곡선의 거리 0, 대칭성, 단일 셀과 다중 셀 각각의
 닫힌형 해, 퇴화한 점-선분, 격자 세분 단조성, 독립 격자-DP 상계, 공선점
 재표본화의 정확한 불변성, 극단적 크기비와 미소 곡선, overflow 예외,
 `cdtw_adaptive`의 경로 비용 일치·평탄 구간·인자 검증이 포함됩니다.
@@ -180,7 +180,7 @@ tests/test_cdtw.py              단위 및 회귀 테스트
 examples/basic_usage.py         실행 예제
 validation/validation_suite.py  전문 검증 스위트
 validation/VALIDATION_REPORT.md 검증 보고서
-experiments/                    실데이터 경험적 실험
+experiments/                    경험적 실험 (실데이터 강건성, 격자 정확도)
 .github/workflows/tests.yml     자동 CI 테스트
 .gitignore                      빌드·캐시 산출물 제외 규칙
 LICENSE                         MIT 라이선스 전문
@@ -217,25 +217,40 @@ MIT License. 전문은 [`LICENSE`](LICENSE)에 있습니다.
   10.1개지만 `n=200`이면 2.3개이고 셀의 22%는 내부 표본이 0개(코너로만 통과
   가능)였습니다. 값은 항상 참 최적값의 **상계**이므로 오차는 한쪽으로만 생깁니다.
 
-  | 꼭짓점 수 | `grid_size=256`의 초과 오차 |
-  |---:|---:|
-  | 7 | +0.001% |
-  | 14 | +0.000% |
-  | 29 | +0.018% |
-  | 68 | +0.193% |
+  아래는 무작위 보행 쌍 **60건**(구간당 10건)을 `grid_size=2048`과 대조한
+  실측입니다. 재현: [`experiments/grid_size_accuracy.py`](experiments/grid_size_accuracy.py)
+
+  | 꼭짓점 | 평균 | 중앙값 | 최대 |
+  |---:|---:|---:|---:|
+  | 14–21 | +0.007% | +0.004% | +0.023% |
+  | 28–38 | +0.021% | +0.011% | +0.096% |
+  | 51–62 | +0.107% | +0.079% | +0.284% |
+  | 68–83 | +0.110% | +0.049% | +0.373% |
+  | 96–113 | +0.210% | +0.085% | +0.552% |
+  | 140–154 | +0.199% | +0.100% | **+0.984%** |
+
+  **평균보다 최대값을 보세요.** 분포가 심하게 한쪽으로 치우쳐 있어서
+  중앙값은 낮은데 꼬리가 깁니다. 같은 구간 안에서도 `+0.000%`인 쌍과
+  `+0.98%`인 쌍이 섞여 있으므로, 꼭짓점 수만으로 오차를 예측할 수 없습니다.
+  60건 전부 초과 방향이었고 기준값을 밑도는 경우는 없었습니다.
 
   꼭짓점이 수십 개를 넘는 계열이라면 다음 중 하나를 쓰세요.
 
   ```python
-  from cdtw import cdtw_adaptive, cdtw_distance, _as_curve
+  from cdtw import cdtw_adaptive, cdtw_distance, curve_vertex_count
 
   # 1) 권장: 해상도를 자동으로 올리며 안정화를 확인
   result = cdtw_adaptive(p, q, initial_grid_size=64, max_grid_size=4096)
 
   # 2) 또는 꼭짓점 수에 비례해 직접 지정
-  vertices = _as_curve(p, "p").vertices.size + _as_curve(q, "q").vertices.size
-  distance = cdtw_distance(p, q, grid_size=max(256, 16 * vertices))
+  vertices = max(curve_vertex_count(p), curve_vertex_count(q))
+  distance = cdtw_distance(p, q, grid_size=max(256, 32 * vertices))
   ```
+
+  `curve_vertex_count`는 중복값과 공선 구간을 제거한 뒤 남는 꼭짓점 수를
+  돌려줍니다. 비용과 오차를 지배하는 건 표본 수가 아니라 이 값입니다.
+  헬퍼를 쓰고 싶지 않다면 `len(p)`를 써도 됩니다 — 병합 때문에 실제보다
+  크게 나오지만 안전한(격자를 더 촘촘히 잡는) 방향입니다.
 - 입력 크기에는 상한이 있습니다. 개별 값뿐 아니라 **두 곡선의 조합**을 검사합니다.
   최대 높이 `H`와 총 호 길이 `L`에 대해 `2·H²`(셀 내부 제곱항)와 `L·H`(누적 적분)이
   float64 범위를 넘으면 `ValueError`를 냅니다. 값 각각은 표현 가능해도 누적합이
